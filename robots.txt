@@ -1,0 +1,6 @@
+# Allow all search engine crawlers
+User-agent: *
+Allow: /
+
+# Sitemap Location
+Sitemap: https://YOUR-SITE.vercel.app/sitemap.xml

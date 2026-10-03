@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zehnova - Free AI Assistant | Chat, Image Generation & Image Editing</title>
+    
+    <!-- SEO & Metadata -->
+    <meta name="description" content="Zehnova is an advanced AI Assistant featuring real-time conversational chat, text-to-image creation, and precise AI image editing.">
+    <meta name="keywords" content="AI assistant, AI image generator, AI image editor, Zehnova, chat AI, image edit AI">
+    <meta name="robots" content="index, follow">
+    <!-- Google Search Console verification placeholder: <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" /> -->
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Zehnova - Free AI Assistant">
+    <meta property="og:description" content="Conversational AI, instant image generation, and intelligent image editing.">
+    <meta property="og:image" content="https://placehold.co/1200x630/4f46e5/ffffff?text=Zehnova+AI+Assistant">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Zehnova - Free AI Assistant">
+    <meta name="twitter:description" content="Conversational AI, instant image generation, and intelligent image editing.">
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Zehnova",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "All",
+      "description": "Free AI Assistant with chat, image creation, and image editing capabilities.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      }
+    }
+    </script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- External Libraries: FontAwesome, Marked.js, DOMPurify -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 3px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(75, 85, 99, 0.5);
+        }
+        
+        /* Image Comparison Slider Styling */
+        .comparison-container {
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+        .comparison-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 50%;
+            overflow: hidden;
+        }
+        .comparison-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background-color: #ffffff;
+            cursor: ew-resize;
+            transform: translateX(-50%);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .comparison-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200">
+
+    <!-- Navigation Sidebar -->
+    <aside class="w-full md:w-64 bg-white dark:bg-gray-800 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 flex flex-col justify-between shrink-0">
+        <div>
+            <!-- Header Logo -->
+            <div class="p-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+                        Z
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight tracking-tight text-gray-900 dark:text-white">Zehnova</h1>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Free AI Assistant</span>
+                    </div>
+                </div>
+                <!-- Dark Mode Toggle -->
+                <button id="themeToggle" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" aria-label="Toggle Theme">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="p-3 space-y-1">
+                <button onclick="switchTab('chat')" id="nav-chat" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-500">
+                    <i class="fa-solid fa-comments text-lg w-5"></i>
+                    <span>Chat</span>
+                </button>
+                <button onclick="switchTab('image')" id="nav-image" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50 transition-all">
+                    <i class="fa-solid fa-wand-magic-sparkles text-lg w-5"></i>
+                    <span>Create Image</span>
+                </button>
+                <button onclick="switchTab('edit')" id="nav-edit" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50 transition-all">
+                    <i class="fa-solid fa-pen-to-square text-lg w-5"></i>
+                    <span>Edit Image</span>
+                </button>
+                <button onclick="switchTab('video')" id="nav-video" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50 transition-all">
+                    <i class="fa-solid fa-video text-lg w-5"></i>
+                    <span>Video</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Sidebar Bottom Footer / Pricing trigger -->
+        <div class="p-4 border-t border-gray-100 dark:border-gray-700 space-y-3">
+            <button onclick="openPricingModal()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-medium shadow-md hover:opacity-95 transition flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-crown text-amber-300"></i>
+                <span>Upgrade Plan</span>
+            </button>
+            <div class="text-xs text-center text-gray-400 dark:text-gray-500">
+                &copy; 2026 Zehnova AI. All rights reserved.
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Workspace -->
+    <main class="flex-1 flex flex-col h-[calc(100vh-65px)] md:h-screen overflow-hidden relative">
+        
+        <!-- 1. CHAT TAB -->
+        <section id="tab-chat" class="tab-content flex-1 flex flex-col h-full">
+            <!-- Top Chat Header -->
+            <header class="p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-robot text-brand-600 dark:text-brand-500 text-lg"></i>
+                    <h2 class="font-semibold text-gray-800 dark:text-gray-100">AI Conversation</h2>
+                </div>
+                <button onclick="clearChatHistory()" class="text-xs text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition flex items-center space-x-1 px-2 py-1 rounded border border-gray-200 dark:border-gray-700">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Clear Chat</span>
+                </button>
+            </header>
+
+            <!-- Chat Message List -->
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-4xl mx-auto w-full">
+                <!-- Welcome Banner -->
+                <div id="chatWelcome" class="text-center my-12 space-y-3">
+                    <div class="w-16 h-16 bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-500 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100">How can Zehnova help you today?</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">Ask questions, request code, summarize articles, or draft creative text content directly.</p>
+                </div>
+            </div>
+
+            <!-- Chat Input Box -->
+            <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                <div class="max-w-4xl mx-auto space-y-2">
+                    <div id="chatErrorContainer"></div>
+                    <div class="relative flex items-end bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-2xl p-2 focus-within:border-brand-500 transition-colors shadow-sm">
+                        <textarea id="chatInput" rows="1" placeholder="Type a message..." class="w-full bg-transparent border-none focus:outline-none resize-none px-3 py-2 max-h-32 text-gray-800 dark:text-gray-100 text-sm"></textarea>
+                        
+                        <div class="flex items-center space-x-2 pl-2 pr-1 pb-1">
+                            <span id="charCounter" class="text-[10px] text-gray-400 hidden">0/2000</span>
+                            <button id="stopChatBtn" onclick="stopChatGeneration()" class="hidden p-2 rounded-xl bg-red-500 hover:bg-red-600 text-white transition text-xs flex items-center space-x-1">
+                                <i class="fa-solid fa-stop"></i>
+                                <span>Stop</span>
+                            </button>
+                            <button id="sendChatBtn" onclick="sendChatMessage()" class="p-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white transition disabled:opacity-50">
+                                <i class="fa-solid fa-paper-plane text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. CREATE IMAGE TAB -->
+        <section id="tab-image" class="tab-content hidden flex-1 overflow-y-auto p-4 md:p-8 max-w-5xl mx-auto w-full">
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Create AI Image</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Generate high-quality artwork and realistic imagery from text descriptions.</p>
+                </div>
+
+                <!-- Input Controls -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Prompt</label>
+                        <textarea id="imagePrompt" rows="3" placeholder="A futuristic city surrounded by lush green floating gardens, vibrant digital art..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl p-3 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:border-brand-500"></textarea>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Aspect Ratio</label>
+                            <div class="flex space-x-2">
+                                <button type="button" class="ratio-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-600 text-white border border-brand-600" data-ratio="1:1">1:1 Square</button>
+                                <button type="button" class="ratio-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-transparent" data-ratio="16:9">16:9 Landscape</button>
+                                <button type="button" class="ratio-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-transparent" data-ratio="9:16">9:16 Portrait</button>
+                            </div>
+                        </div>
+
+                        <button id="generateImgBtn" onclick="generateImage()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>Generate Image</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Error Container -->
+                <div id="imageErrorContainer"></div>
+
+                <!-- Loading State -->
+                <div id="imageLoading" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-12 text-center border border-gray-200 dark:border-gray-700 space-y-3">
+                    <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-brand-500 border-t-transparent"></div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Generating your image via Zehnova Engine...</p>
+                </div>
+
+                <!-- Output Display -->
+                <div id="imageOutputContainer" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                    <div class="relative group rounded-xl overflow-hidden bg-gray-900 flex items-center justify-center min-h-[300px]">
+                        <img id="generatedImage" src="" alt="Generated AI Visual" class="max-h-[600px] w-auto object-contain">
+                        <button onclick="openLightbox()" class="absolute top-3 right-3 p-2 bg-black/60 text-white rounded-lg opacity-0 group-hover:opacity-100 transition hover:bg-black/80">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span id="generatedPromptText" class="text-xs text-gray-500 dark:text-gray-400 italic line-clamp-1 pr-4"></span>
+                        <a id="downloadImgBtn" href="#" download="zehnova-generated.jpg" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-xl text-xs font-medium transition flex items-center space-x-2 shrink-0">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Download</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. EDIT IMAGE TAB -->
+        <section id="tab-edit" class="tab-content hidden flex-1 overflow-y-auto p-4 md:p-8 max-w-5xl mx-auto w-full">
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Edit AI Image</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Upload an existing image and provide instructions to transform or adjust it.</p>
+                </div>
+
+                <!-- Input Controls & Upload Area -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Image Upload Box -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload Source Image (JPG, PNG, WebP)</label>
+                            <div id="uploadDropzone" onclick="document.getElementById('editFileInput').click()" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-brand-500 dark:hover:border-brand-500 transition bg-gray-50 dark:bg-gray-900/50 flex flex-col items-center justify-center min-h-[160px]">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                                <span id="uploadFilename" class="text-sm text-gray-600 dark:text-gray-300 font-medium">Click or drag & drop image</span>
+                                <span class="text-xs text-gray-400 mt-1">Resized client-side to max 1024px JPEG</span>
+                            </div>
+                            <input type="file" id="editFileInput" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="handleFileSelect(event)">
+                        </div>
+
+                        <!-- Instruction Prompt -->
+                        <div class="flex flex-col justify-between space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Edit Instructions</label>
+                                <textarea id="editPrompt" rows="4" placeholder="Add a retro watercolor filter, replace background with mountains..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl p-3 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:border-brand-500"></textarea>
+                            </div>
+                            <button id="submitEditBtn" onclick="submitImageEdit()" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                <span>Apply AI Edits</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Container -->
+                <div id="editErrorContainer"></div>
+
+                <!-- Loading State -->
+                <div id="editLoading" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-12 text-center border border-gray-200 dark:border-gray-700 space-y-3">
+                    <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-brand-500 border-t-transparent"></div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Processing image edit via Zehnova Engine...</p>
+                </div>
+
+                <!-- Output Display with Comparison Slider -->
+                <div id="editOutputContainer" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-semibold text-gray-800 dark:text-gray-200 text-sm">Before & After Comparison</h3>
+                        <a id="downloadEditedBtn" href="#" download="zehnova-edited.jpg" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-lg text-xs font-medium transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Download Result</span>
+                        </a>
+                    </div>
+
+                    <!-- Comparison Slider Widget -->
+                    <div id="comparisonBox" class="comparison-container rounded-xl overflow-hidden bg-gray-900 w-full max-h-[500px] flex justify-center items-center">
+                        <img id="editedImage" src="" alt="After Edit" class="max-h-[500px] w-auto object-contain block">
+                        <div id="comparisonOverlay" class="comparison-overlay">
+                            <img id="originalImagePreview" src="" alt="Before Edit" class="max-h-[500px] w-auto object-contain max-w-none">
+                        </div>
+                        <div id="comparisonHandle" class="comparison-handle">
+                            <div class="comparison-button">
+                                <i class="fa-solid fa-left-right text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. VIDEO TAB -->
+        <section id="tab-video" class="tab-content hidden flex-1 overflow-y-auto p-4 md:p-8 max-w-4xl mx-auto w-full flex items-center justify-center">
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl p-8 md:p-12 text-center max-w-xl shadow-lg space-y-6">
+                <div class="w-20 h-20 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center mx-auto text-3xl shadow-inner">
+                    <i class="fa-solid fa-film"></i>
+                </div>
+                <div class="space-y-2">
+                    <span class="inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-semibold rounded-full uppercase tracking-wider">In Active Development</span>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">AI Video Generation Coming Soon</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                        We are currently integrating next-generation AI video models into Zehnova. In the meantime, explore Google's experimental video tools at Google Labs.
+                    </p>
+                </div>
+                <div class="pt-2">
+                    <a href="https://labs.google/flow" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm transition shadow-md hover:shadow-lg">
+                        <span>Visit Google Labs Flow</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PRICING MODAL -->
+    <div id="pricingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-3xl w-full p-6 md:p-8 space-y-6 relative border border-gray-200 dark:border-gray-700 shadow-2xl">
+            <button onclick="closePricingModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center space-y-2">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Choose Your Plan</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Unlock maximum performance and priority AI generation with Zehnova Pro.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <!-- Free Plan -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-2xl p-5 flex flex-col justify-between bg-gray-50 dark:bg-gray-900/40">
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-lg text-gray-800 dark:text-gray-200">Free</h4>
+                        <div class="text-2xl font-extrabold text-gray-900 dark:text-white">₹0 <span class="text-xs font-normal text-gray-500">/ forever</span></div>
+                        <ul class="text-xs space-y-2 text-gray-600 dark:text-gray-300">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i>50 answers / day</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i>Standard response speed</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i>Community support</li>
+                        </ul>
+                    </div>
+                    <button class="mt-6 w-full py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-xs font-medium text-gray-700 dark:text-gray-300 cursor-default" disabled>Current Plan</button>
+                </div>
+
+                <!-- Pro Monthly -->
+                <div class="border border-brand-500 dark:border-brand-500 rounded-2xl p-5 flex flex-col justify-between bg-white dark:bg-gray-800 relative shadow-md">
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-lg text-brand-600 dark:text-brand-400">Pro Monthly</h4>
+                        <div class="text-2xl font-extrabold text-gray-900 dark:text-white">₹2,000 <span class="text-xs font-normal text-gray-500">/ mo</span></div>
+                        <ul class="text-xs space-y-2 text-gray-600 dark:text-gray-300">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-brand-500 mr-2"></i>Unlimited AI responses</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-brand-500 mr-2"></i>Fast image & edit generation</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-brand-500 mr-2"></i>Priority server access</li>
+                        </ul>
+                    </div>
+                    <button class="mt-6 w-full py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium transition">Upgrade Pro</button>
+                </div>
+
+                <!-- Pro Annual -->
+                <div class="border border-indigo-200 dark:border-indigo-800 rounded-2xl p-5 flex flex-col justify-between bg-indigo-50/50 dark:bg-indigo-950/20 relative">
+                    <span class="absolute -top-2.5 right-4 px-2.5 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-full uppercase">Save ₹4,000</span>
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-lg text-indigo-900 dark:text-indigo-300">Pro Annual</h4>
+                        <div class="text-2xl font-extrabold text-gray-900 dark:text-white">₹20,000 <span class="text-xs font-normal text-gray-500">/ yr</span></div>
+                        <ul class="text-xs space-y-2 text-gray-600 dark:text-gray-300">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-indigo-500 mr-2"></i>All Pro Monthly benefits</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-indigo-500 mr-2"></i>2 Months free equivalent</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-indigo-500 mr-2"></i>Early feature access</li>
+                        </ul>
+                    </div>
+                    <button class="mt-6 w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium transition">Upgrade Annual</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX MODAL -->
+    <div id="lightbox" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
+        <button class="absolute top-4 right-4 text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
+        <img id="lightboxImg" src="" alt="Expanded View" class="max-h-[90vh] max-w-[90vw] object-contain rounded-lg">
+    </div>
+
+    <script>
+        /* Application Logic & Endpoint Integration */
+        
+        // Active Chat AbortController
+        let currentChatController = null;
+        
+        // Chat Memory State (Loaded from LocalStorage)
+        let chatMessagesHistory = JSON.parse(localStorage.getItem('zehnova_chat_history') || '[]');
+        
+        // Selected Edit Image Canvas Data URL
+        let processedEditImageData = null;
+
+        // --- INIT & THEME SETUP ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            setupChatInputAutoResize();
+            setupRatioButtons();
+            setupComparisonSlider();
+            renderStoredChatHistory();
+        });
+
+        // Theme Switcher Logic
+        function initTheme() {
+            const themeToggleBtn = document.getElementById('themeToggle');
+            themeToggleBtn.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('zehnova_theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('zehnova_theme', 'dark');
+                }
+            });
+            if (localStorage.getItem('zehnova_theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        // --- NAVIGATION TABS ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-brand-50', 'text-brand-600', 'dark:bg-brand-900/30', 'dark:text-brand-500');
+                el.classList.add('text-gray-600', 'dark:text-gray-300');
+            });
+
+            const selectedTab = document.getElementById(`tab-${tabName}`);
+            const selectedBtn = document.getElementById(`nav-${tabName}`);
+            
+            if (selectedTab) selectedTab.classList.remove('hidden');
+            if (selectedBtn) {
+                selectedBtn.classList.remove('text-gray-600', 'dark:text-gray-300');
+                selectedBtn.classList.add('bg-brand-50', 'text-brand-600', 'dark:bg-brand-900/30', 'dark:text-brand-500');
+            }
+        }
+
+        // --- 1. CHAT TAB IMPLEMENTATION ---
+        function setupChatInputAutoResize() {
+            const textarea = document.getElementById('chatInput');
+            const counter = document.getElementById('charCounter');
+            
+            textarea.addEventListener('input', () => {
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
+                
+                const len = textarea.value.length;
+                if (len > 0) {
+                    counter.classList.remove('hidden');
+                    counter.textContent = `${len}/2000`;
+                } else {
+                    counter.classList.add('hidden');
+                }
+            });
+
+            textarea.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+        }
+
+        function renderStoredChatHistory() {
+            const container = document.getElementById('chatMessages');
+            const welcome = document.getElementById('chatWelcome');
+            if (chatMessagesHistory.length > 0 && welcome) {
+                welcome.classList.add('hidden');
+            }
+            chatMessagesHistory.forEach(msg => appendChatMessageUI(msg.role, msg.text));
+        }
+
+        function appendChatMessageUI(role, text) {
+            const container = document.getElementById('chatMessages');
+            const welcome = document.getElementById('chatWelcome');
+            if (welcome) welcome.classList.add('hidden');
+
+            const isUser = role === 'user';
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`;
+
+            const bubble = document.createElement('div');
+            bubble.className = isUser 
+                ? 'max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 bg-brand-600 text-white text-sm shadow-sm'
+                : 'max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 text-sm shadow-sm space-y-2';
+
+            if (isUser) {
+                bubble.textContent = text;
+            } else {
+                const cleanHTML = DOMPurify.sanitize(marked.parse(text));
+                bubble.innerHTML = cleanHTML;
+                
+                // Add copy buttons to code blocks
+                bubble.querySelectorAll('pre').forEach(pre => {
+                    pre.className = 'relative group bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto my-2 text-xs';
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition';
+                    copyBtn.innerHTML = '<i class="fa-solid fa-copy mr-1"></i>Copy';
+                    copyBtn.onclick = () => {
+                        const code = pre.querySelector('code')?.innerText || pre.innerText;
+                        navigator.clipboard.writeText(code);
+                        copyBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Copied!';
+                        setTimeout(() => copyBtn.innerHTML = '<i class="fa-solid fa-copy mr-1"></i>Copy', 2000);
+                    };
+                    pre.appendChild(copyBtn);
+                });
+            }
+
+            wrapper.appendChild(bubble);
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+            return bubble;
+        }
+
+        async function sendChatMessage(retryPrompt = null) {
+            const input = document.getElementById('chatInput');
+            const text = retryPrompt || input.value.trim();
+            if (!text) return;
+
+            if (!retryPrompt) {
+                input.value = '';
+                input.style.height = 'auto';
+                document.getElementById('charCounter').classList.add('hidden');
+                
+                // Add user message to state & UI
+                chatMessagesHistory.push({ role: 'user', text });
+                localStorage.setItem('zehnova_chat_history', JSON.stringify(chatMessagesHistory));
+                appendChatMessageUI('user', text);
+            }
+
+            // Clear previous errors
+            clearInlineError('chatErrorContainer');
+
+            // UI Buttons State
+            document.getElementById('sendChatBtn').classList.add('hidden');
+            document.getElementById('stopChatBtn').classList.remove('hidden');
+
+            // Append assistant loading placeholder
+            const loadingBubble = appendChatMessageUI('model', '<i class="fa-solid fa-circle-notch fa-spin text-brand-500 mr-2"></i>Thinking...');
+
+            currentChatController = new AbortController();
+
+            try {
+                // Exact contract payload: { messages: [{ role: "user" | "model", text }] }
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: currentChatController.signal,
+                    body: JSON.stringify({
+                        messages: chatMessagesHistory.map(m => ({ role: m.role, text: m.text }))
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (!data || !data.reply) {
+                    throw new Error('Invalid format received from chat server.');
+                }
+
+                // Update Loading placeholder with response
+                loadingBubble.innerHTML = DOMPurify.sanitize(marked.parse(data.reply));
+                
+                // Store in Chat History
+                chatMessagesHistory.push({ role: 'model', text: data.reply });
+                localStorage.setItem('zehnova_chat_history', JSON.stringify(chatMessagesHistory));
+
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    loadingBubble.innerHTML = '<span class="text-gray-400 italic">Response generation stopped.</span>';
+                } else {
+                    loadingBubble.remove();
+                    showInlineError('chatErrorContainer', err.message || 'Failed to communicate with chat backend.', () => sendChatMessage(text));
+                }
+            } finally {
+                document.getElementById('sendChatBtn').classList.remove('hidden');
+                document.getElementById('stopChatBtn').classList.add('hidden');
+                currentChatController = null;
+            }
+        }
+
+        function stopChatGeneration() {
+            if (currentChatController) {
+                currentChatController.abort();
+            }
+        }
+
+        function clearChatHistory() {
+            chatMessagesHistory = [];
+            localStorage.removeItem('zehnova_chat_history');
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = `
+                <div id="chatWelcome" class="text-center my-12 space-y-3">
+                    <div class="w-16 h-16 bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-500 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100">How can Zehnova help you today?</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">Ask questions, request code, summarize articles, or draft creative text content directly.</p>
+                </div>`;
+        }
+
+        // --- 2. CREATE IMAGE TAB IMPLEMENTATION ---
+        function setupRatioButtons() {
+            const btns = document.querySelectorAll('.ratio-btn');
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btns.forEach(b => {
+                        b.classList.remove('bg-brand-600', 'text-white', 'border-brand-600');
+                        b.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'border-transparent');
+                    });
+                    btn.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'border-transparent');
+                    btn.classList.add('bg-brand-600', 'text-white', 'border-brand-600');
+                });
+            });
+        }
+
+        async function generateImage() {
+            const promptInput = document.getElementById('imagePrompt');
+            const prompt = promptInput.value.trim();
+            
+            if (!prompt) {
+                showInlineError('imageErrorContainer', 'Please enter a detailed image prompt before generating.');
+                return;
+            }
+
+            clearInlineError('imageErrorContainer');
+            document.getElementById('imageOutputContainer').classList.add('hidden');
+            document.getElementById('imageLoading').classList.remove('hidden');
+
+            try {
+                // Exact contract payload: POST /api/image with { prompt }
+                const response = await fetch('/api/image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || `Server error (${response.status})`);
+                }
+
+                if (!data.image) {
+                    throw new Error('No image payload returned by backend endpoint.');
+                }
+
+                // Render output image
+                const imgEl = document.getElementById('generatedImage');
+                const downloadBtn = document.getElementById('downloadImgBtn');
+                
+                imgEl.src = data.image;
+                downloadBtn.href = data.image;
+                document.getElementById('generatedPromptText').textContent = `Prompt: "${prompt}"`;
+                
+                document.getElementById('imageOutputContainer').classList.remove('hidden');
+
+            } catch (err) {
+                showInlineError('imageErrorContainer', err.message || 'Image generation failed.', () => generateImage());
+            } finally {
+                document.getElementById('imageLoading').classList.add('hidden');
+            }
+        }
+
+        // --- 3. EDIT IMAGE TAB IMPLEMENTATION (Canvas Preprocessing) ---
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                showInlineError('editErrorContainer', 'Invalid file format. Please upload a JPEG, PNG, or WebP image.');
+                return;
+            }
+
+            document.getElementById('uploadFilename').textContent = file.name;
+            clearInlineError('editErrorContainer');
+
+            // Resize via Browser Canvas: longest side max 1024px, JPEG at quality 0.85
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxSide = 1024;
+
+                    if (width > maxSide || height > maxSide) {
+                        if (width > height) {
+                            height = Math.round((height * maxSide) / width);
+                            width = maxSide;
+                        } else {
+                            width = Math.round((width * maxSide) / height);
+                            height = maxSide;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Client Canvas Export: JPEG quality 0.85
+                    processedEditImageData = canvas.toDataURL('image/jpeg', 0.85);
+                    document.getElementById('originalImagePreview').src = processedEditImageData;
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function submitImageEdit() {
+            const prompt = document.getElementById('editPrompt').value.trim();
+
+            if (!processedEditImageData) {
+                showInlineError('editErrorContainer', 'Please select and upload a source image first.');
+                return;
+            }
+
+            if (!prompt) {
+                showInlineError('editErrorContainer', 'Please enter editing instructions for the image.');
+                return;
+            }
+
+            clearInlineError('editErrorContainer');
+            document.getElementById('editOutputContainer').classList.add('hidden');
+            document.getElementById('editLoading').classList.remove('hidden');
+
+            try {
+                // Exact contract payload: POST /api/edit with { prompt, image }
+                const response = await fetch('/api/edit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        image: processedEditImageData
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || `Server error (${response.status})`);
+                }
+
+                if (!data.image) {
+                    throw new Error('No image payload returned by edit endpoint.');
+                }
+
+                // Render edited result
+                document.getElementById('editedImage').src = data.image;
+                document.getElementById('downloadEditedBtn').href = data.image;
+                document.getElementById('editOutputContainer').classList.remove('hidden');
+
+            } catch (err) {
+                showInlineError('editErrorContainer', err.message || 'Image edit operation failed.', () => submitImageEdit());
+            } finally {
+                document.getElementById('editLoading').classList.add('hidden');
+            }
+        }
+
+        // --- COMPARISON SLIDER DRAG LOGIC ---
+        function setupComparisonSlider() {
+            const container = document.getElementById('comparisonBox');
+            const handle = document.getElementById('comparisonHandle');
+            const overlay = document.getElementById('comparisonOverlay');
+            let isDragging = false;
+
+            const updateSlider = (clientX) => {
+                const rect = container.getBoundingClientRect();
+                let x = clientX - rect.left;
+                if (x < 0) x = 0;
+                if (x > rect.width) x = rect.width;
+                const percentage = (x / rect.width) * 100;
+                overlay.style.width = percentage + '%';
+                handle.style.left = percentage + '%';
+            };
+
+            handle.addEventListener('mousedown', () => isDragging = true);
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) updateSlider(e.clientX);
+            });
+
+            // Touch support for mobile devices
+            handle.addEventListener('touchstart', () => isDragging = true);
+            window.addEventListener('touchend', () => isDragging = false);
+            window.addEventListener('touchmove', (e) => {
+                if (isDragging && e.touches[0]) updateSlider(e.touches[0].clientX);
+            });
+        }
+
+        // --- INLINE ERROR DISPLAY UTILITY ---
+        function showInlineError(containerId, message, retryCallback = null) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const errorBox = document.createElement('div');
+            errorBox.className = 'p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 flex items-center justify-between text-sm my-2';
+            
+            const textSpan = document.createElement('span');
+            textSpan.className = 'flex items-center space-x-2';
+            textSpan.innerHTML = `<i class="fa-solid fa-circle-exclamation text-red-500"></i><span>${message}</span>`;
+            errorBox.appendChild(textSpan);
+
+            if (retryCallback) {
+                const retryBtn = document.createElement('button');
+                retryBtn.className = 'px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition ml-3 shrink-0';
+                retryBtn.innerHTML = '<i class="fa-solid fa-rotate-right mr-1"></i>Retry';
+                retryBtn.onclick = () => {
+                    errorBox.remove();
+                    retryCallback();
+                };
+                errorBox.appendChild(retryBtn);
+            }
+
+            container.innerHTML = '';
+            container.appendChild(errorBox);
+        }
+
+        function clearInlineError(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) container.innerHTML = '';
+        }
+
+        // --- PRICING & LIGHTBOX MODAL HANDLERS ---
+        function openPricingModal() {
+            document.getElementById('pricingModal').classList.remove('hidden');
+        }
+
+        function closePricingModal() {
+            document.getElementById('pricingModal').classList.add('hidden');
+        }
+
+        function openLightbox() {
+            const img = document.getElementById('generatedImage');
+            if (img && img.src) {
+                document.getElementById('lightboxImg').src = img.src;
+                document.getElementById('lightbox').classList.remove('hidden');
+            }
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
